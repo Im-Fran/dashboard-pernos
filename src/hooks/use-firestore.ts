@@ -1,6 +1,12 @@
 import { useState, useEffect, useContext, createContext, useMemo, useCallback, useRef } from 'react';
-import { useFirestore } from '@/components/providers/firestore-provider';
-import { DocumentData, QueryConstraint } from 'firebase/firestore';
+import {
+  QueryConstraint,
+  Firestore,
+  CollectionReference,
+  type DocumentData,
+  type WhereFilterOp,
+  type Unsubscribe
+} from 'firebase/firestore';
 
 // Cache simple para evitar lecturas innecesarias
 const queryCache = new Map<string, { data: DocumentData[], timestamp: number }>();

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CalendarDays, Activity, Hash, Database } from "lucide-react";
 import type { Device } from "@/types/models/device";
-import { SensorCharts, type SensorReading } from "./components/sensor-charts";
+import { SensorCharts, type SensorReading } from "@/pages/device/components/sensor-charts.tsx";
 
 export const DevicePage = () => {
   const { id } = useParams<{ id: string }>();
