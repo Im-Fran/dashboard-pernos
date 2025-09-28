@@ -1,6 +1,7 @@
 import {useCollection} from "@/hooks/use-firestore.ts";
 import { DeviceCard } from "./devices-preview/device-card";
 import type { Device } from "@/types/models/device";
+import {Link} from "react-router";
 
 export const DevicesPreview = () => {
 
@@ -38,7 +39,9 @@ export const DevicesPreview = () => {
       {data && data.length > 0 ? (
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {data.map((device) => (
-            <DeviceCard key={device.id} device={device as Device} />
+            <Link to={`/dispositivos/${device.id}`}>
+              <DeviceCard key={device.id} device={device as Device} />
+            </Link>
           ))}
         </div>
       ) : (
