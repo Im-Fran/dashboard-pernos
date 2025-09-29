@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -26,10 +26,11 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
-import { Clock, Activity, BarChart3, LineChart as LineChartIcon, Radar as RadarIcon, CalendarDays, X, ZoomIn } from 'lucide-react';
+import { Clock, Activity, BarChart3, LineChart as LineChartIcon, Radar as RadarIcon, CalendarDays, X, ZoomIn, Download, Camera } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { DateRange } from 'react-day-picker';
+import html2canvas from 'html2canvas-pro';
 
 // Componente personalizado de tooltip que se adapta al tema
 interface TooltipPayload {
@@ -112,6 +113,12 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
   const [timeRange, setTimeRange] = useState<TimeRange>('5d');
   const [chartType, setChartType] = useState<ChartType>('lines');
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [isExporting, setIsExporting] = useState(false);
+
+  // Referencias para los contenedores de gráficos
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const accelerometerRef = useRef<HTMLDivElement>(null);
+  const gyroscopeRef = useRef<HTMLDivElement>(null);
 
   // Función auxiliar para convertir timestamps a Date
   const toDate = (timestamp: { toDate?: () => Date } | Date | number): Date => {
@@ -263,6 +270,125 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
 
   const chartWidth = getChartWidth();
   const needsScroll = chartWidth > 800; // Mostrar scroll si el ancho es mayor a 800px
+
+  // Función para exportar un elemento específico como imagen
+  const exportElementAsImage = async (element: HTMLElement, filename: string) => {
+    try {
+      setIsExporting(true);
+
+      // Detectar tema actual
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      const backgroundColor = isDarkMode ? '#1f2937' : '#ffffff'; // gray-800 para oscuro, blanco para claro
+
+      // Guardar estilos originales
+      const originalOverflow = element.style.overflow;
+      const originalWidth = element.style.width;
+      const originalMaxWidth = element.style.maxWidth;
+
+      // Encontrar todos los contenedores scrolleables dentro del elemento
+      const scrollContainers = element.querySelectorAll('[style*="overflow-x-auto"]') as NodeListOf<HTMLElement>;
+      const originalScrollStyles: { element: HTMLElement; overflow: string; width: string }[] = [];
+
+      // Temporalmente ajustar estilos para capturar todo el contenido
+      element.style.overflow = 'visible';
+      element.style.width = 'fit-content';
+      element.style.maxWidth = 'none';
+
+      // Ajustar contenedores scrolleables
+      scrollContainers.forEach(container => {
+        originalScrollStyles.push({
+          element: container,
+          overflow: container.style.overflow,
+          width: container.style.width
+        });
+        container.style.overflow = 'visible';
+        container.style.width = 'fit-content';
+      });
+
+      // Esperar un momento para que se apliquen los cambios
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Configuración optimizada para html2canvas
+      const canvas = await html2canvas(element, {
+        backgroundColor,
+        scale: 1.5, // Resolución optimizada
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        width: element.scrollWidth,
+        height: element.scrollHeight,
+        scrollX: 0,
+        scrollY: 0,
+        ignoreElements: (el) => {
+          // Ignorar scrollbars y elementos que puedan causar problemas
+          return el.tagName === 'SCROLLBAR' ||
+                 el.classList.contains('scrollbar') ||
+                 (el as HTMLElement).style.position === 'fixed';
+        }
+      });
+
+      // Restaurar estilos originales
+      element.style.overflow = originalOverflow;
+      element.style.width = originalWidth;
+      element.style.maxWidth = originalMaxWidth;
+
+      scrollContainers.forEach((container, index) => {
+        const original = originalScrollStyles[index];
+        container.style.overflow = original.overflow;
+        container.style.width = original.width;
+      });
+
+      // Convertir canvas a blob y descargar
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }
+      }, 'image/png');
+    } catch (error) {
+      console.error('Error al exportar imagen:', error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Función para generar nombre de archivo con timestamp
+  const generateFilename = (type: string) => {
+    const now = new Date();
+    const timestamp = now.toISOString().slice(0, 19).replace(/[:.]/g, '-');
+    const rangeLabel = timeRange === 'range'
+      ? `rango-${dateRange?.from ? format(dateRange.from, 'dd-MM-yyyy', { locale: es }) : 'custom'}`
+      : TIME_RANGES.find(r => r.value === timeRange)?.label.replace(/\s/g, '-') || timeRange;
+
+    return `sensores-${type}-${chartType}-${rangeLabel}-${timestamp}.png`;
+  };
+
+  // Exportar todos los gráficos
+  const exportAllCharts = () => {
+    if (chartContainerRef.current) {
+      exportElementAsImage(chartContainerRef.current, generateFilename('completo'));
+    }
+  };
+
+  // Exportar solo el gráfico del acelerómetro
+  const exportAccelerometer = () => {
+    if (accelerometerRef.current) {
+      exportElementAsImage(accelerometerRef.current, generateFilename('acelerometro'));
+    }
+  };
+
+  // Exportar solo el gráfico del giroscopio
+  const exportGyroscope = () => {
+    if (gyroscopeRef.current) {
+      exportElementAsImage(gyroscopeRef.current, generateFilename('giroscopio'));
+    }
+  };
 
   const renderChart = () => {
     if (!chartData.length) {
@@ -498,7 +624,7 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
     // Para gráficos de radar y radial, mantener el comportamiento original con ambos sensores
     if (chartType === 'radar') {
       return (
-        <div className="w-full flex justify-center">
+        <div ref={chartContainerRef} className="w-full flex justify-center">
           <div style={{ width: Math.min(chartWidth, 600), height: 400 }}>
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={radarData}>
@@ -518,7 +644,7 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
 
     if (chartType === 'radial') {
       return (
-        <div className="w-full flex justify-center">
+        <div ref={chartContainerRef} className="w-full flex justify-center">
           <div style={{ width: Math.min(chartWidth, 600), height: 400 }}>
             <ResponsiveContainer width="100%" height="100%">
               <RadialBarChart cx="50%" cy="50%" innerRadius="20%" outerRadius="90%" data={radialData}>
@@ -534,28 +660,52 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
 
     // Para gráficos de líneas, área y barras, mostrar dos gráficos separados
     return (
-      <div className="space-y-6">
+      <div ref={chartContainerRef} className="space-y-6">
         {/* Gráfico del Acelerómetro */}
-        <div>
-          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            <Activity className="h-5 w-5 text-blue-600" />
-            Acelerómetro
-            <Badge variant="outline" className="text-xs">
-              m/s²
-            </Badge>
-          </h3>
+        <div ref={accelerometerRef}>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Activity className="h-5 w-5 text-blue-600" />
+              Acelerómetro
+              <Badge variant="outline" className="text-xs">
+                m/s²
+              </Badge>
+            </h3>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportAccelerometer}
+              disabled={isExporting}
+              className="flex items-center gap-1"
+            >
+              <Camera className="h-4 w-4" />
+              Exportar
+            </Button>
+          </div>
           {renderAccelerometerChart()}
         </div>
 
         {/* Gráfico del Giroscopio */}
-        <div>
-          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            <Activity className="h-5 w-5 text-green-600" />
-            Giroscopio
-            <Badge variant="outline" className="text-xs">
-              9.8m/s²
-            </Badge>
-          </h3>
+        <div ref={gyroscopeRef}>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Activity className="h-5 w-5 text-green-600" />
+              Giroscopio
+              <Badge variant="outline" className="text-xs">
+                rad/s
+              </Badge>
+            </h3>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportGyroscope}
+              disabled={isExporting}
+              className="flex items-center gap-1"
+            >
+              <Camera className="h-4 w-4" />
+              Exportar
+            </Button>
+          </div>
           {renderGyroscopeChart()}
         </div>
       </div>
@@ -612,6 +762,17 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
                 Scrolleable
               </Badge>
             )}
+            {/* Botón de exportar todos los gráficos */}
+            <Button
+              variant="default"
+              size="sm"
+              onClick={exportAllCharts}
+              disabled={isExporting || !chartData.length}
+              className="flex items-center gap-1"
+            >
+              <Download className="h-4 w-4" />
+              {isExporting ? 'Exportando...' : 'Exportar Todo'}
+            </Button>
           </div>
         </div>
 
@@ -713,6 +874,11 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
           {needsScroll && (
             <p className="text-xs text-muted-foreground mt-2">
               💡 <span className="font-medium">Tip:</span> Desliza horizontalmente para ver todos los datos en dispositivos móviles.
+            </p>
+          )}
+          {chartData.length > 0 && (
+            <p className="text-xs text-muted-foreground mt-2">
+              📸 <span className="font-medium">Exportación:</span> Usa el botón "Exportar Todo" para descargar todos los gráficos, o los botones individuales de cada sensor.
             </p>
           )}
         </div>
