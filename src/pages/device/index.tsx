@@ -1,14 +1,26 @@
 import { useParams } from "react-router";
+import { Link } from "react-router";
 import { useDocument, useCollection, useFirestore } from "@/hooks/use-firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CalendarDays, Activity, Hash, Database } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
+} from "@/components/ui/breadcrumb";
+import { useSidebar } from "@/components/ui/sidebar";
+import { CalendarDays, Activity, Hash, Database, Menu, Home } from "lucide-react";
 import type { Device } from "@/types/models/device";
 import { SensorCharts, type SensorReading } from "@/pages/device/components/sensor-charts.tsx";
 
 export const DevicePage = () => {
   const { id } = useParams<{ id: string }>();
   const { orderByQuery, limitQuery } = useFirestore();
+  const { toggleSidebar } = useSidebar();
 
   const { data: device, loading, error } = useDocument('devices', id!);
 
@@ -138,7 +150,39 @@ export const DevicePage = () => {
 
   return (
     <div className="container mx-auto p-6">
+      {/* Header con Breadcrumbs */}
       <div className="mb-6">
+        <div className="flex items-center gap-4 mb-4">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={toggleSidebar}
+            className="h-8 w-8"
+          >
+            <Menu className="h-4 w-4" />
+            <span className="sr-only">Toggle sidebar</span>
+          </Button>
+
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/" className="flex items-center gap-1">
+                    <Home className="h-4 w-4" />
+                    Inicio
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>
+                  {loading ? 'Cargando...' : (deviceData?.name || 'Dispositivo')}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+
         <h1 className="text-3xl font-bold">Detalles del Dispositivo</h1>
         <p className="text-muted-foreground">Información detallada del dispositivo seleccionado</p>
       </div>
