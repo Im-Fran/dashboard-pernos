@@ -273,156 +273,293 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
       );
     }
 
-    const chartHeight = 400;
+    const chartHeight = 350; // Reducido para acomodar dos gráficos
 
-    switch (chartType) {
-      case 'lines':
-        return (
-          <div
-            className={`${needsScroll ? 'overflow-x-auto' : ''} w-full`}
-            style={{
-              minWidth: '100%',
-              ...(needsScroll && {
-                scrollbarWidth: 'thin',
-                scrollbarColor: 'rgba(155, 155, 155, 0.5) transparent'
-              })
-            }}
-          >
-            <div style={{ width: chartWidth, height: chartHeight }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="time"
-                    interval={Math.max(0, Math.floor(chartData.length / 10))}
-                    angle={-45}
-                    textAnchor="end"
-                    height={60}
-                  />
-                  <YAxis />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend />
-                  <Line type="monotone" dataKey="accel_x" stroke="#8884d8" name="Accel X" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="accel_y" stroke="#82ca9d" name="Accel Y" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="accel_z" stroke="#ffc658" name="Accel Z" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="gyro_x" stroke="#ff7300" name="Gyro X" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="gyro_y" stroke="#00ff00" name="Gyro Y" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="gyro_z" stroke="#ff0000" name="Gyro Z" strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
+    const renderAccelerometerChart = () => {
+      switch (chartType) {
+        case 'lines':
+          return (
+            <div
+              className={`${needsScroll ? 'overflow-x-auto' : ''} w-full`}
+              style={{
+                minWidth: '100%',
+                ...(needsScroll && {
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: 'rgba(155, 155, 155, 0.5) transparent'
+                })
+              }}
+            >
+              <div style={{ width: chartWidth, height: chartHeight }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="time"
+                      interval={Math.max(0, Math.floor(chartData.length / 10))}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Line type="monotone" dataKey="accel_x" stroke="#8884d8" name="Accel X" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="accel_y" stroke="#82ca9d" name="Accel Y" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="accel_z" stroke="#ffc658" name="Accel Z" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-          </div>
-        );
+          );
 
-      case 'area':
-        return (
-          <div
-            className={`${needsScroll ? 'overflow-x-auto' : ''} w-full`}
-            style={{
-              minWidth: '100%',
-              ...(needsScroll && {
-                scrollbarWidth: 'thin',
-                scrollbarColor: 'rgba(155, 155, 155, 0.5) transparent'
-              })
-            }}
-          >
-            <div style={{ width: chartWidth, height: chartHeight }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="time"
-                    interval={Math.max(0, Math.floor(chartData.length / 10))}
-                    angle={-45}
-                    textAnchor="end"
-                    height={60}
-                  />
-                  <YAxis />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend />
-                  <Area type="monotone" dataKey="accel_magnitude" stackId="1" stroke="#8884d8" fill="#8884d8" name="Magnitud Acelerómetro" />
-                  <Area type="monotone" dataKey="gyro_magnitude" stackId="2" stroke="#82ca9d" fill="#82ca9d" name="Magnitud Giroscopio" />
-                </AreaChart>
-              </ResponsiveContainer>
+        case 'area':
+          return (
+            <div
+              className={`${needsScroll ? 'overflow-x-auto' : ''} w-full`}
+              style={{
+                minWidth: '100%',
+                ...(needsScroll && {
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: 'rgba(155, 155, 155, 0.5) transparent'
+                })
+              }}
+            >
+              <div style={{ width: chartWidth, height: chartHeight }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="time"
+                      interval={Math.max(0, Math.floor(chartData.length / 10))}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Area type="monotone" dataKey="accel_magnitude" stroke="#8884d8" fill="#8884d8" name="Magnitud Acelerómetro" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-          </div>
-        );
+          );
 
-      case 'bars':
-        return (
-          <div
-            className={`${needsScroll ? 'overflow-x-auto' : ''} w-full`}
-            style={{
-              minWidth: '100%',
-              ...(needsScroll && {
-                scrollbarWidth: 'thin',
-                scrollbarColor: 'rgba(155, 155, 155, 0.5) transparent'
-              })
-            }}
-          >
-            <div style={{ width: chartWidth, height: chartHeight }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="time"
-                    interval={Math.max(0, Math.floor(chartData.length / 8))}
-                    angle={-45}
-                    textAnchor="end"
-                    height={60}
-                  />
-                  <YAxis />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend />
-                  <Bar dataKey="accel_x" fill="#8884d8" name="Accel X" />
-                  <Bar dataKey="accel_y" fill="#82ca9d" name="Accel Y" />
-                  <Bar dataKey="accel_z" fill="#ffc658" name="Accel Z" />
-                  <Bar dataKey="gyro_x" fill="#ff7300" name="Gyro X" />
-                  <Bar dataKey="gyro_y" fill="#00ff00" name="Gyro Y" />
-                  <Bar dataKey="gyro_z" fill="#ff0000" name="Gyro Z" />
-                </BarChart>
-              </ResponsiveContainer>
+        case 'bars':
+          return (
+            <div
+              className={`${needsScroll ? 'overflow-x-auto' : ''} w-full`}
+              style={{
+                minWidth: '100%',
+                ...(needsScroll && {
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: 'rgba(155, 155, 155, 0.5) transparent'
+                })
+              }}
+            >
+              <div style={{ width: chartWidth, height: chartHeight }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="time"
+                      interval={Math.max(0, Math.floor(chartData.length / 8))}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Bar dataKey="accel_x" fill="#8884d8" name="Accel X" />
+                    <Bar dataKey="accel_y" fill="#82ca9d" name="Accel Y" />
+                    <Bar dataKey="accel_z" fill="#ffc658" name="Accel Z" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-          </div>
-        );
+          );
 
-      case 'radar':
-        return (
-          <div className="w-full flex justify-center">
-            <div style={{ width: Math.min(chartWidth, 600), height: chartHeight }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={radarData}>
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="axis" />
-                  <PolarRadiusAxis />
-                  <Radar name="Acelerómetro" dataKey="accel" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
-                  <Radar name="Giroscopio" dataKey="gyro" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} />
-                  <Legend />
-                  <Tooltip content={<CustomTooltip />} />
-                </RadarChart>
-              </ResponsiveContainer>
+        default:
+          return null;
+      }
+    };
+
+    const renderGyroscopeChart = () => {
+      switch (chartType) {
+        case 'lines':
+          return (
+            <div
+              className={`${needsScroll ? 'overflow-x-auto' : ''} w-full`}
+              style={{
+                minWidth: '100%',
+                ...(needsScroll && {
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: 'rgba(155, 155, 155, 0.5) transparent'
+                })
+              }}
+            >
+              <div style={{ width: chartWidth, height: chartHeight }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="time"
+                      interval={Math.max(0, Math.floor(chartData.length / 10))}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Line type="monotone" dataKey="gyro_x" stroke="#ff7300" name="Gyro X" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="gyro_y" stroke="#00ff00" name="Gyro Y" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="gyro_z" stroke="#ff0000" name="Gyro Z" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-          </div>
-        );
+          );
 
-      case 'radial':
-        return (
-          <div className="w-full flex justify-center">
-            <div style={{ width: Math.min(chartWidth, 600), height: chartHeight }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <RadialBarChart cx="50%" cy="50%" innerRadius="20%" outerRadius="90%" data={radialData}>
-                  <RadialBar dataKey="value" cornerRadius={10} fill="#8884d8" />
-                  <Legend />
-                  <Tooltip content={<CustomTooltip />} />
-                </RadialBarChart>
-              </ResponsiveContainer>
+        case 'area':
+          return (
+            <div
+              className={`${needsScroll ? 'overflow-x-auto' : ''} w-full`}
+              style={{
+                minWidth: '100%',
+                ...(needsScroll && {
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: 'rgba(155, 155, 155, 0.5) transparent'
+                })
+              }}
+            >
+              <div style={{ width: chartWidth, height: chartHeight }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="time"
+                      interval={Math.max(0, Math.floor(chartData.length / 10))}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Area type="monotone" dataKey="gyro_magnitude" stroke="#82ca9d" fill="#82ca9d" name="Magnitud Giroscopio" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-          </div>
-        );
+          );
 
-      default:
-        return null;
+        case 'bars':
+          return (
+            <div
+              className={`${needsScroll ? 'overflow-x-auto' : ''} w-full`}
+              style={{
+                minWidth: '100%',
+                ...(needsScroll && {
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: 'rgba(155, 155, 155, 0.5) transparent'
+                })
+              }}
+            >
+              <div style={{ width: chartWidth, height: chartHeight }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="time"
+                      interval={Math.max(0, Math.floor(chartData.length / 8))}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Bar dataKey="gyro_x" fill="#ff7300" name="Gyro X" />
+                    <Bar dataKey="gyro_y" fill="#00ff00" name="Gyro Y" />
+                    <Bar dataKey="gyro_z" fill="#ff0000" name="Gyro Z" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          );
+
+        default:
+          return null;
+      }
+    };
+
+    // Para gráficos de radar y radial, mantener el comportamiento original con ambos sensores
+    if (chartType === 'radar') {
+      return (
+        <div className="w-full flex justify-center">
+          <div style={{ width: Math.min(chartWidth, 600), height: 400 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={radarData}>
+                <PolarGrid />
+                <PolarAngleAxis dataKey="axis" />
+                <PolarRadiusAxis />
+                <Radar name="Acelerómetro" dataKey="accel" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                <Radar name="Giroscopio" dataKey="gyro" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} />
+                <Legend />
+                <Tooltip content={<CustomTooltip />} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      );
     }
+
+    if (chartType === 'radial') {
+      return (
+        <div className="w-full flex justify-center">
+          <div style={{ width: Math.min(chartWidth, 600), height: 400 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <RadialBarChart cx="50%" cy="50%" innerRadius="20%" outerRadius="90%" data={radialData}>
+                <RadialBar dataKey="value" cornerRadius={10} fill="#8884d8" />
+                <Legend />
+                <Tooltip content={<CustomTooltip />} />
+              </RadialBarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      );
+    }
+
+    // Para gráficos de líneas, área y barras, mostrar dos gráficos separados
+    return (
+      <div className="space-y-6">
+        {/* Gráfico del Acelerómetro */}
+        <div>
+          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <Activity className="h-5 w-5 text-blue-600" />
+            Acelerómetro
+            <Badge variant="outline" className="text-xs">
+              m/s²
+            </Badge>
+          </h3>
+          {renderAccelerometerChart()}
+        </div>
+
+        {/* Gráfico del Giroscopio */}
+        <div>
+          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <Activity className="h-5 w-5 text-green-600" />
+            Giroscopio
+            <Badge variant="outline" className="text-xs">
+              grados/s
+            </Badge>
+          </h3>
+          {renderGyroscopeChart()}
+        </div>
+      </div>
+    );
   };
 
   // Función para limpiar el rango de fechas
@@ -443,15 +580,15 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
   const getChartDescription = (type: ChartType): string => {
     switch (type) {
       case 'lines':
-        return 'Se muestran los datos de cada sensor en formato "crudo". Cada línea representa un eje del acelerómetro (X, Y, Z) y giroscopio (X, Y, Z), permitiendo analizar el comportamiento individual de cada componente a lo largo del tiempo.';
+        return 'Se muestran los datos de cada sensor por separado en formato "crudo". En el primer gráfico se visualizan los tres ejes del acelerómetro (X, Y, Z) y en el segundo gráfico los tres ejes del giroscopio (X, Y, Z), permitiendo un análisis más claro de cada sensor individualmente.';
       case 'area':
-        return 'Se visualizan las magnitudes totales de aceleración |a| y giroscopio |ω|. Útil para detectar eventos de movimiento, vibraciones o cambios significativos en la actividad del dispositivo sin el ruido de los componentes individuales.';
+        return 'Se visualizan las magnitudes totales por separado: la magnitud de aceleración |a| en el primer gráfico y la magnitud del giroscopio |ω| en el segundo. Esta separación facilita la detección de eventos específicos de movimiento o rotación sin interferencias visuales entre sensores.';
       case 'bars':
-        return 'Se comparan los promedios recientes de cada eje (X, Y, Z) tanto del acelerómetro como del giroscopio. Ideal para analizar la distribución de fuerzas y identificar qué ejes tienen mayor actividad en el período seleccionado.';
+        return 'Se comparan los promedios recientes de cada eje por sensor. El primer gráfico muestra los ejes X, Y, Z del acelerómetro y el segundo los del giroscopio. Ideal para analizar la distribución de fuerzas y rotaciones por separado e identificar patrones específicos de cada sensor.';
       case 'radar':
-        return 'Se muestra un snapshot instantáneo de los valores absolutos de la última lectura disponible. Permite visualizar todos los ejes X, Y, Z simultáneamente en un formato polar, útil para entender la orientación y patrones de movimiento actuales.';
+        return 'Se muestra un snapshot instantáneo de los valores absolutos de la última lectura disponible. Permite visualizar todos los ejes X, Y, Z de ambos sensores simultáneamente en un formato polar, útil para entender la orientación y patrones de movimiento actuales de forma comparativa.';
       case 'radial':
-        return 'Se visualiza la intensidad actual mediante las magnitudes normalizadas de aceleración y giroscopio. Este gráfico es ideal para monitorear el nivel general de actividad del dispositivo de forma rápida y visual.';
+        return 'Se visualiza la intensidad actual mediante las magnitudes normalizadas de aceleración y giroscopio. Este gráfico es ideal para monitorear el nivel general de actividad del dispositivo de forma rápida y visual, comparando ambos sensores en un solo vistazo.';
       default:
         return '';
     }
