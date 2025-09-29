@@ -663,10 +663,10 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
       <div ref={chartContainerRef} className="space-y-6">
         {/* Gráfico del Acelerómetro */}
         <div ref={accelerometerRef}>
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <Activity className="h-5 w-5 text-blue-600" />
-              Acelerómetro
+              <span>Acelerómetro</span>
               <Badge variant="outline" className="text-xs">
                 m/s²
               </Badge>
@@ -676,10 +676,11 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
               size="sm"
               onClick={exportAccelerometer}
               disabled={isExporting}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 w-fit shrink-0"
             >
               <Camera className="h-4 w-4" />
-              Exportar
+              <span className="hidden sm:inline">Exportar</span>
+              <span className="sm:hidden text-xs">Export</span>
             </Button>
           </div>
           {renderAccelerometerChart()}
@@ -687,10 +688,10 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
 
         {/* Gráfico del Giroscopio */}
         <div ref={gyroscopeRef}>
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <Activity className="h-5 w-5 text-green-600" />
-              Giroscopio
+              <span>Giroscopio</span>
               <Badge variant="outline" className="text-xs">
                 rad/s
               </Badge>
@@ -700,10 +701,11 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
               size="sm"
               onClick={exportGyroscope}
               disabled={isExporting}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 w-fit shrink-0"
             >
               <Camera className="h-4 w-4" />
-              Exportar
+              <span className="hidden sm:inline">Exportar</span>
+              <span className="sm:hidden text-xs">Export</span>
             </Button>
           </div>
           {renderGyroscopeChart()}
@@ -747,40 +749,49 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            Datos de Sensores
-          </CardTitle>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline">
-              {filteredData.length} lecturas
-            </Badge>
-            {needsScroll && (
-              <Badge variant="secondary" className="flex items-center gap-1">
-                <ZoomIn className="h-3 w-3" />
-                Scrolleable
-              </Badge>
-            )}
-            {/* Botón de exportar todos los gráficos */}
+        <div className="flex flex-col gap-4">
+          {/* Título y badges principales */}
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Datos de Sensores
+            </CardTitle>
+
+            {/* Botón de exportar - siempre visible */}
             <Button
               variant="default"
               size="sm"
               onClick={exportAllCharts}
               disabled={isExporting || !chartData.length}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 shrink-0"
             >
               <Download className="h-4 w-4" />
-              {isExporting ? 'Exportando...' : 'Exportar Todo'}
+              <span className="hidden sm:inline">{isExporting ? 'Exportando...' : 'Exportar Todo'}</span>
+              <span className="sm:hidden">{isExporting ? '...' : 'Exportar'}</span>
             </Button>
+          </div>
+
+          {/* Badges informativos */}
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="outline" className="text-xs">
+              {filteredData.length} lecturas
+            </Badge>
+            {needsScroll && (
+              <Badge variant="secondary" className="flex items-center gap-1 text-xs">
+                <ZoomIn className="h-3 w-3" />
+                <span className="hidden sm:inline">Scrolleable</span>
+                <span className="sm:hidden">Scroll</span>
+              </Badge>
+            )}
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-4 mt-4">
+        {/* Controles de filtrado */}
+        <div className="flex flex-col sm:flex-row gap-3 mt-4">
           <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
+            <Clock className="h-4 w-4 shrink-0" />
             <Select value={timeRange} onValueChange={handleTimeRangeChange}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-full sm:w-32">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -794,9 +805,9 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
           </div>
 
           <div className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
+            <BarChart3 className="h-4 w-4 shrink-0" />
             <Select value={chartType} onValueChange={(value: ChartType) => setChartType(value)}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-full sm:w-32">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -817,37 +828,39 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
 
           {/* Selector de rango de fechas - solo visible cuando timeRange es 'range' */}
           {timeRange === 'range' && (
-            <div className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4" />
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="min-w-[260px] justify-start text-left font-normal">
-                    {dateRange?.from ? (
-                      dateRange.to ? (
-                        <>
-                          {format(dateRange.from, "LLL dd, y", { locale: es })} -{" "}
-                          {format(dateRange.to, "LLL dd, y", { locale: es })}
-                        </>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+              <div className="flex items-center gap-2">
+                <CalendarDays className="h-4 w-4 shrink-0" />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full sm:min-w-[260px] justify-start text-left font-normal">
+                      {dateRange?.from ? (
+                        dateRange.to ? (
+                          <>
+                            {format(dateRange.from, "dd/MM/yy", { locale: es })} -{" "}
+                            {format(dateRange.to, "dd/MM/yy", { locale: es })}
+                          </>
+                        ) : (
+                          format(dateRange.from, "dd/MM/yyyy", { locale: es })
+                        )
                       ) : (
-                        format(dateRange.from, "LLL dd, y", { locale: es })
-                      )
-                    ) : (
-                      <span>Seleccionar rango de fechas</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    initialFocus
-                    mode="range"
-                    defaultMonth={dateRange?.from}
-                    selected={dateRange}
-                    onSelect={setDateRange}
-                    numberOfMonths={2}
-                    locale={es}
-                  />
-                </PopoverContent>
-              </Popover>
+                        <span className="truncate">Seleccionar rango</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      initialFocus
+                      mode="range"
+                      defaultMonth={dateRange?.from}
+                      selected={dateRange}
+                      onSelect={setDateRange}
+                      numberOfMonths={2}
+                      locale={es}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
 
               {/* Botón para limpiar el rango de fechas */}
               {dateRange?.from && (
@@ -855,7 +868,7 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
                   variant="outline"
                   size="icon"
                   onClick={clearDateRange}
-                  className="h-9 w-9"
+                  className="h-9 w-9 shrink-0"
                 >
                   <X className="h-4 w-4" />
                 </Button>
