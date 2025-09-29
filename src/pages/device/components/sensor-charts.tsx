@@ -553,7 +553,7 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
             <Activity className="h-5 w-5 text-green-600" />
             Giroscopio
             <Badge variant="outline" className="text-xs">
-              grados/s
+              9.8m/s²
             </Badge>
           </h3>
           {renderGyroscopeChart()}
