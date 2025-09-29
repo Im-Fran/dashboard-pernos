@@ -26,7 +26,7 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
-import { Clock, Activity, BarChart3, LineChart as LineChartIcon, Radar as RadarIcon, CalendarDays, X } from 'lucide-react';
+import { Clock, Activity, BarChart3, LineChart as LineChartIcon, Radar as RadarIcon, CalendarDays, X, ZoomIn } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { DateRange } from 'react-day-picker';
@@ -246,6 +246,24 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
     );
   }
 
+  // Calcular ancho dinámico basado en el número de datos para scroll horizontal
+  const getChartWidth = () => {
+    const dataPoints = chartData.length;
+    const minWidth = 800; // Ancho mínimo para gráficos
+    const maxWidth = 3000; // Ancho máximo para evitar gráficos demasiado anchos
+
+    // Para gráficos de radar y radial, usar ancho fijo
+    if (chartType === 'radar' || chartType === 'radial') {
+      return minWidth;
+    }
+
+    // Calcular ancho basado en los puntos de datos (más datos = más ancho)
+    return Math.max(minWidth, Math.min(maxWidth, dataPoints * 8));
+  };
+
+  const chartWidth = getChartWidth();
+  const needsScroll = chartWidth > 800; // Mostrar scroll si el ancho es mayor a 800px
+
   const renderChart = () => {
     if (!chartData.length) {
       return (
@@ -255,84 +273,151 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
       );
     }
 
+    const chartHeight = 400;
+
     switch (chartType) {
       case 'lines':
         return (
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
-              <YAxis />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Line type="monotone" dataKey="accel_x" stroke="#8884d8" name="Accel X" strokeWidth={2} />
-              <Line type="monotone" dataKey="accel_y" stroke="#82ca9d" name="Accel Y" strokeWidth={2} />
-              <Line type="monotone" dataKey="accel_z" stroke="#ffc658" name="Accel Z" strokeWidth={2} />
-              <Line type="monotone" dataKey="gyro_x" stroke="#ff7300" name="Gyro X" strokeWidth={2} />
-              <Line type="monotone" dataKey="gyro_y" stroke="#00ff00" name="Gyro Y" strokeWidth={2} />
-              <Line type="monotone" dataKey="gyro_z" stroke="#ff0000" name="Gyro Z" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
+          <div
+            className={`${needsScroll ? 'overflow-x-auto' : ''} w-full`}
+            style={{
+              minWidth: '100%',
+              ...(needsScroll && {
+                scrollbarWidth: 'thin',
+                scrollbarColor: 'rgba(155, 155, 155, 0.5) transparent'
+              })
+            }}
+          >
+            <div style={{ width: chartWidth, height: chartHeight }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="time"
+                    interval={Math.max(0, Math.floor(chartData.length / 10))}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  />
+                  <YAxis />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend />
+                  <Line type="monotone" dataKey="accel_x" stroke="#8884d8" name="Accel X" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="accel_y" stroke="#82ca9d" name="Accel Y" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="accel_z" stroke="#ffc658" name="Accel Z" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="gyro_x" stroke="#ff7300" name="Gyro X" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="gyro_y" stroke="#00ff00" name="Gyro Y" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="gyro_z" stroke="#ff0000" name="Gyro Z" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         );
 
       case 'area':
         return (
-          <ResponsiveContainer width="100%" height={400}>
-            <AreaChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
-              <YAxis />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Area type="monotone" dataKey="accel_magnitude" stackId="1" stroke="#8884d8" fill="#8884d8" name="Magnitud Acelerómetro" />
-              <Area type="monotone" dataKey="gyro_magnitude" stackId="2" stroke="#82ca9d" fill="#82ca9d" name="Magnitud Giroscopio" />
-            </AreaChart>
-          </ResponsiveContainer>
+          <div
+            className={`${needsScroll ? 'overflow-x-auto' : ''} w-full`}
+            style={{
+              minWidth: '100%',
+              ...(needsScroll && {
+                scrollbarWidth: 'thin',
+                scrollbarColor: 'rgba(155, 155, 155, 0.5) transparent'
+              })
+            }}
+          >
+            <div style={{ width: chartWidth, height: chartHeight }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="time"
+                    interval={Math.max(0, Math.floor(chartData.length / 10))}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  />
+                  <YAxis />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend />
+                  <Area type="monotone" dataKey="accel_magnitude" stackId="1" stroke="#8884d8" fill="#8884d8" name="Magnitud Acelerómetro" />
+                  <Area type="monotone" dataKey="gyro_magnitude" stackId="2" stroke="#82ca9d" fill="#82ca9d" name="Magnitud Giroscopio" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         );
 
       case 'bars':
         return (
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
-              <YAxis />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Bar dataKey="accel_x" fill="#8884d8" name="Accel X" />
-              <Bar dataKey="accel_y" fill="#82ca9d" name="Accel Y" />
-              <Bar dataKey="accel_z" fill="#ffc658" name="Accel Z" />
-              <Bar dataKey="gyro_x" fill="#ff7300" name="Gyro X" />
-              <Bar dataKey="gyro_y" fill="#00ff00" name="Gyro Y" />
-              <Bar dataKey="gyro_z" fill="#ff0000" name="Gyro Z" />
-            </BarChart>
-          </ResponsiveContainer>
+          <div
+            className={`${needsScroll ? 'overflow-x-auto' : ''} w-full`}
+            style={{
+              minWidth: '100%',
+              ...(needsScroll && {
+                scrollbarWidth: 'thin',
+                scrollbarColor: 'rgba(155, 155, 155, 0.5) transparent'
+              })
+            }}
+          >
+            <div style={{ width: chartWidth, height: chartHeight }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="time"
+                    interval={Math.max(0, Math.floor(chartData.length / 8))}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  />
+                  <YAxis />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend />
+                  <Bar dataKey="accel_x" fill="#8884d8" name="Accel X" />
+                  <Bar dataKey="accel_y" fill="#82ca9d" name="Accel Y" />
+                  <Bar dataKey="accel_z" fill="#ffc658" name="Accel Z" />
+                  <Bar dataKey="gyro_x" fill="#ff7300" name="Gyro X" />
+                  <Bar dataKey="gyro_y" fill="#00ff00" name="Gyro Y" />
+                  <Bar dataKey="gyro_z" fill="#ff0000" name="Gyro Z" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         );
 
       case 'radar':
         return (
-          <ResponsiveContainer width="100%" height={400}>
-            <RadarChart data={radarData}>
-              <PolarGrid />
-              <PolarAngleAxis dataKey="axis" />
-              <PolarRadiusAxis />
-              <Radar name="Acelerómetro" dataKey="accel" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
-              <Radar name="Giroscopio" dataKey="gyro" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} />
-              <Legend />
-              <Tooltip content={<CustomTooltip />} />
-            </RadarChart>
-          </ResponsiveContainer>
+          <div className="w-full flex justify-center">
+            <div style={{ width: Math.min(chartWidth, 600), height: chartHeight }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart data={radarData}>
+                  <PolarGrid />
+                  <PolarAngleAxis dataKey="axis" />
+                  <PolarRadiusAxis />
+                  <Radar name="Acelerómetro" dataKey="accel" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                  <Radar name="Giroscopio" dataKey="gyro" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} />
+                  <Legend />
+                  <Tooltip content={<CustomTooltip />} />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         );
 
       case 'radial':
         return (
-          <ResponsiveContainer width="100%" height={400}>
-            <RadialBarChart cx="50%" cy="50%" innerRadius="20%" outerRadius="90%" data={radialData}>
-              <RadialBar dataKey="value" cornerRadius={10} fill="#8884d8" />
-              <Legend />
-              <Tooltip content={<CustomTooltip />} />
-            </RadialBarChart>
-          </ResponsiveContainer>
+          <div className="w-full flex justify-center">
+            <div style={{ width: Math.min(chartWidth, 600), height: chartHeight }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <RadialBarChart cx="50%" cy="50%" innerRadius="20%" outerRadius="90%" data={radialData}>
+                  <RadialBar dataKey="value" cornerRadius={10} fill="#8884d8" />
+                  <Legend />
+                  <Tooltip content={<CustomTooltip />} />
+                </RadialBarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         );
 
       default:
@@ -380,9 +465,17 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
             <Activity className="h-5 w-5" />
             Datos de Sensores
           </CardTitle>
-          <Badge variant="outline">
-            {filteredData.length} lecturas
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline">
+              {filteredData.length} lecturas
+            </Badge>
+            {needsScroll && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <ZoomIn className="h-3 w-3" />
+                Scrolleable
+              </Badge>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-4 mt-4">
@@ -480,6 +573,11 @@ export const SensorCharts = ({ readings, loading = false }: SensorChartsProps) =
           <p className="text-sm text-muted-foreground leading-relaxed">
             <span className="font-medium text-foreground">Información:</span> {getChartDescription(chartType)}
           </p>
+          {needsScroll && (
+            <p className="text-xs text-muted-foreground mt-2">
+              💡 <span className="font-medium">Tip:</span> Desliza horizontalmente para ver todos los datos en dispositivos móviles.
+            </p>
+          )}
         </div>
 
         {renderChart()}
